@@ -7,13 +7,47 @@ output:
 
 
 ## Loading and preprocessing the data
+```{r}
+if(!file.exists('activity.csv')){
+  unzip("activity.zip")
+}
+activity <- read.csv('activity.csv', header=TRUE)
+```
 
+From a previous assignment I have learned it's best to turn the date column into a POSIXlt datetime column for ease of use in graphing.
+
+```{r}
+dates <- as.character(activity$date)
+times <- activity$interval
+times <- sprintf("%02d", times)
+times <- paste("00", times, sep=":")
+
+activity$datetime <- as.POSIXlt(paste(dates, times), format="%Y-%m-%d %H:%M", tz="GMT")
+rm(dates, times)
+
+```
+
+
+
+To get the axis to format nicely I added the following to my ggplot2 commands:
+
++ scale_x_chron(format="%H:%M") 
 
 
 ## What is mean total number of steps taken per day?
+First we calculate the total steps per day using the summarize command of the dplyr package.  (We must load plyr first though.)
 
+```{r}
+require(plyr)
+require(dplyr)
+steps_per_day <- summarise(group_by(activity, date), sum(steps))
+```
 
+Next we create the histogram:
 
+```{r}
+
+```
 ## What is the average daily activity pattern?
 
 
