@@ -4,12 +4,6 @@ output:
   html_document:
     keep_md: true
 ---
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
 
 
 1. Loading and preprocessing the data
@@ -21,7 +15,7 @@ activity <- read.csv('activity.csv', header=TRUE)
 ```
 
 2. What is mean total number of steps taken per day?
-  2.1 First we calculate the total steps per day using the summarize command of the dplyr package.  (We must load plyr first though.)
+2.1 First we calculate the total steps per day using the summarize command of the dplyr package.  (We must load plyr first though.)
 
 ```{r}
 require(plyr)
@@ -107,4 +101,17 @@ new_total <- sum(new_steps_per_day$total_steps)
 ```
 The new data frame does have more total steps per day, though.
 
-## Are there differences in activity patterns between weekdays and weekends?
+5. Are there differences in activity patterns between weekdays and weekends?
+  5.1 I probably should have made the date and time columns into the POSIX format from the beginning, but I found it difficult to get the steps_by_interval when I tried it.  Good thing I saved one of my early attempts:
+
+
+```{r}
+dates <- as.character(activity$date)
+times <- activity$interval
+times <- sprintf("%02d", times)
+times <- paste("00", times, sep=":")
+
+activity$datetime <- as.POSIXlt(paste(dates, times), format="%Y-%m-%d %H:%M", tz="GMT")
+rm(dates, times)
+weekend <- c("Sunday","Saturday")
+```
