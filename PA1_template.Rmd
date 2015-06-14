@@ -57,6 +57,7 @@ plot(steps_by_interval$interval, steps_by_interval$average, type="l",
 max_value <- max(steps_by_interval$average)
 which_interval <- subset(steps_by_interval, average == max_value, select = interval)
 ```
+The interval labeled `r which_interval` has the most steps.
 
 ## 4. Imputing missing values
 * Well, I had to remove all the NAs from the data frame in order to get the summarize function to work.  Now the assignment calls for finding the number of NAs in the data frame, so we start over with a fresh reading of the file.
