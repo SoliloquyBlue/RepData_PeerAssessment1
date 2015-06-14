@@ -15,7 +15,7 @@ activity <- read.csv('activity.csv', header=TRUE)
 ```
 
 ## 2. What is mean total number of steps taken per day?
-  1. First we calculate the total steps per day using the summarize command of the dplyr package.  (We must load plyr first though.)
+1. First we calculate the total steps per day using the summarize command of the dplyr package.  (We must load plyr first though.)
 
 ```{r}
 require(plyr)
@@ -24,13 +24,13 @@ steps_per_day <- summarise(group_by(activity, date), sum(steps))
 colnames(steps_per_day)[2] <- "total_steps"
 ```
 
-  2. Next we create the histogram:
+2. Next we create the histogram:
 
 ```{r}
 hist(steps_per_day$total_steps, col="darkblue", main="Histogram of steps per day", xlab="Steps Per Day")
 ```
 
-  3. And finally calculate the mean and median:
+3. And finally calculate the mean and median:
 ```{r}
 mean <- mean(steps_per_day$total_steps, na.rm = TRUE)
 median <- median(steps_per_day$total_steps, na.rm = TRUE)
@@ -40,7 +40,7 @@ So the mean is `r mean` and the median is `r median`.
 Optional: rm(mean, median, steps_per_day)
 
 ## 3. What is the average daily activity pattern?
-  1. I interpreted this question to mean we should get the average steps per day for each interval, so I'll construct a new data frame.
+1. I interpreted this question to mean we should get the average steps per day for each interval, so I'll construct a new data frame.
 
 ```{r}
 activity <- activity[complete.cases(activity[,1]), ]
@@ -52,21 +52,21 @@ plot(steps_by_interval$interval, steps_by_interval$average, type="l",
      ylab="Average steps")
 ```
 
-  2. 
+2. 
 ```{r}
 max_value <- max(steps_by_interval$average)
 which_interval <- subset(steps_by_interval, average == max_value, select = interval)
 ```
 
 ## 4. Imputing missing values
-  1. Well, I had to remove all the NAs from the data frame in order to get the summarize function to work.  Now the assignment calls for finding the number of NAs in the data frame, so we start over with a fresh reading of the file.
+1. Well, I had to remove all the NAs from the data frame in order to get the summarize function to work.  Now the assignment calls for finding the number of NAs in the data frame, so we start over with a fresh reading of the file.
 ```{r}
 activity <- read.csv('activity.csv', header=TRUE)
 numNAs <- sum(is.na(activity$steps))
 ```
 There are `r numNAs` in the data frame.
 
-  2. I decided to impute the average number of steps per interval to fill in the missing values with a for loop.  For some reason I couldn't get my already-created steps_by_interval data to work with the for loop, so after some tearing out of hair and Googling I tried a different format.  I created a numeric array of essentially the same data:
+2. I decided to impute the average number of steps per interval to fill in the   missing values with a for loop.  For some reason I couldn't get my already-created steps_by_interval data to work with the for loop, so after some tearing out of hair and Googling I tried a different format.  I created a numeric array of essentially the same data:
 
 ```{r}
 interval_average <-tapply(activity$steps, activity$interval,mean, na.rm=TRUE)
@@ -77,7 +77,7 @@ for (i in which(is.na(activity)))
 ```
 I then checked it with sum(is.na(activity$steps)) and determined there were 0 NAs left in activity$steps.  Yay!
 
-  4. Now to make a histogram... but the original activity data frame doesn't have the total steps per day, so we have to redo steps_per_day:
+4. Now to make a histogram... but the original activity data frame doesn't have the total steps per day, so we have to redo steps_per_day:
 ```{r}
 new_steps_per_day <- summarise(group_by(activity, date), sum(steps))
 colnames(new_steps_per_day)[2] <- "total_steps"
@@ -101,16 +101,32 @@ new_total <- sum(new_steps_per_day$total_steps)
 The new data frame does have more total steps per day, though.
 
 ## 5. Are there differences in activity patterns between weekdays and weekends?
-  1. I probably should have made the date and time columns into the POSIX format from the beginning, but I found it difficult to get the steps_by_interval when I tried it.  Good thing I saved one of my early attempts:
-
+1. 
 
 ```{r}
-dates <- as.character(activity$date)
-times <- activity$interval
-times <- sprintf("%02d", times)
-times <- paste("00", times, sep=":")
+weekday.or.weekend <- function(date) {
+    day <- weekdays(date)
+    if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
+        return("weekday")
+    else if (day %in% c("Saturday", "Sunday"))
+        return("weekend")
+    else
+        stop("invalid date")
+}
+activity$date <- as.Date(activity$date)
+activity$day_of_week <- sapply(activity$date, FUN=weekday.or.weekend)
+activity$day_of_week <- factor(activity$day_of_week)
 
-activity$datetime <- as.POSIXlt(paste(dates, times), format="%Y-%m-%d %H:%M", tz="GMT")
-rm(dates, times)
-weekend <- c("Sunday","Saturday")
+```
+
+2. Have to turn our intervals into a time series again before we can make the panel plot:
+
+```{r}
+activity$interval <- ts(activity$interval)
+require(ggplot2)
+averages <- aggregate(data=activity, steps ~ interval + day_of_week, FUN = "mean")
+ggplot(averages, aes(interval, steps)) + geom_line() + facet_grid(day_of_week ~ .) +
+  geom_line() +
+  ggtitle("Time series plot") +
+  labs(x = "Intervals of 5 minutes", y="Average steps")
 ```
