@@ -5,7 +5,6 @@ output:
     keep_md: true
 ---
 
-
 ## Loading and preprocessing the data
 ```{r}
 if(!file.exists('activity.csv')){
@@ -14,7 +13,46 @@ if(!file.exists('activity.csv')){
 activity <- read.csv('activity.csv', header=TRUE)
 ```
 
-From a previous assignment I have learned it's best to turn the date column into a POSIXlt datetime column for ease of use in graphing.
+## What is mean total number of steps taken per day?
+First we calculate the total steps per day using the summarize command of the dplyr package.  (We must load plyr first though.)
+
+```{r}
+require(plyr)
+require(dplyr)
+steps_per_day <- summarise(group_by(activity, date), sum(steps))
+colnames(steps_per_day)[2] <- "total_steps"
+```
+
+Next we create the histogram:
+
+```{r}
+hist(steps_per_day$total_steps, col="darkblue", main="Histogram of steps per day", xlab="Steps Per Day")
+```
+
+And finally calculate the mean and median:
+```{r}
+mean <- mean(steps_per_day$total_steps, na.rm = TRUE)
+median <- median(steps_per_day$total_steps, na.rm = TRUE)
+```
+So the mean is `mean` and the median is `median`.
+
+Optional: rm(mean, median, steps_per_day)
+
+## What is the average daily activity pattern?
+I interpreted this question to mean we should get the average steps per day for each interval, so I'll construct a new data frame.
+
+```{r}
+activity <- activity[complete.cases(activity[,1]), ]
+steps_by_interval <- summarise(group_by(activity, interval), average = mean(steps, na.rm = TRUE))
+steps_by_interval$interval <- ts(steps_by_interval$interval)
+plot(steps_by_interval$interval, steps_by_interval$average, type="l", 
+     main="Average Daily Steps", 
+     xlab="Intervals of 5 minutes", 
+     ylab="Average steps")
+```
+
+max_value <- max(steps_by_interval$average)
+which_interval <- subset(steps_by_interval, average == max_value, select = interval)
 
 ```{r}
 dates <- as.character(activity$date)
@@ -27,28 +65,12 @@ rm(dates, times)
 
 ```
 
-
-
+Construct the plot:
+```{r}
+```
 To get the axis to format nicely I added the following to my ggplot2 commands:
 
 + scale_x_chron(format="%H:%M") 
-
-
-## What is mean total number of steps taken per day?
-First we calculate the total steps per day using the summarize command of the dplyr package.  (We must load plyr first though.)
-
-```{r}
-require(plyr)
-require(dplyr)
-steps_per_day <- summarise(group_by(activity, date), sum(steps))
-```
-
-Next we create the histogram:
-
-```{r}
-
-```
-## What is the average daily activity pattern?
 
 
 
