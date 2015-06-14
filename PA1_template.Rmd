@@ -6,7 +6,7 @@ output:
 ---
 
 
-1. Loading and preprocessing the data
+## 1. Loading and preprocessing the data
 ```{r}
 if(!file.exists('activity.csv')){
   unzip("activity.zip")
@@ -14,7 +14,7 @@ if(!file.exists('activity.csv')){
 activity <- read.csv('activity.csv', header=TRUE)
 ```
 
-2. What is mean total number of steps taken per day?
+## 2. What is mean total number of steps taken per day?
   1. First we calculate the total steps per day using the summarize command of the dplyr package.  (We must load plyr first though.)
 
 ```{r}
@@ -39,7 +39,7 @@ So the mean is `r mean` and the median is `r median`.
 
 Optional: rm(mean, median, steps_per_day)
 
-3. What is the average daily activity pattern?
+## 3. What is the average daily activity pattern?
   1. I interpreted this question to mean we should get the average steps per day for each interval, so I'll construct a new data frame.
 
 ```{r}
@@ -58,7 +58,7 @@ max_value <- max(steps_by_interval$average)
 which_interval <- subset(steps_by_interval, average == max_value, select = interval)
 ```
 
-4. Imputing missing values
+## 4. Imputing missing values
   1. Well, I had to remove all the NAs from the data frame in order to get the summarize function to work.  Now the assignment calls for finding the number of NAs in the data frame, so we start over with a fresh reading of the file.
 ```{r}
 activity <- read.csv('activity.csv', header=TRUE)
@@ -100,7 +100,7 @@ new_total <- sum(new_steps_per_day$total_steps)
 ```
 The new data frame does have more total steps per day, though.
 
-5. Are there differences in activity patterns between weekdays and weekends?
+## 5. Are there differences in activity patterns between weekdays and weekends?
   1. I probably should have made the date and time columns into the POSIX format from the beginning, but I found it difficult to get the steps_by_interval when I tried it.  Good thing I saved one of my early attempts:
 
 
